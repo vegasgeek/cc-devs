@@ -76,7 +76,11 @@ function ccd_wp_mail_filter( $args ) {
 
 			$to =		$dev_email;
 			$subject =	$args['subject'];
+<<<<<<< HEAD
 			$message = 	$args['message'] . "\n\n To unsubscribe from these emails, <a href=\"". get_option( 'site_url') ."?ccdt=". $timehash ."\">Click Here</a>";
+=======
+			$message = 	$args['message'] . "\n\n To unsubscribe from these emails, <a href=\"". get_bloginfo( 'wpurl') ."?ccde=". urlencode( $dev_email ) ."&ccdt=". $timehash ."\">Click Here</a>";
+>>>>>>> fixed how we pull blog info
 			$headers =	$args['headers'];
 			$attachments =	$args['attachments'];
 
