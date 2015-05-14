@@ -65,19 +65,18 @@ function ccd_wp_mail_filter( $args ) {
 	$admin_email = get_site_option( 'admin_email' );
 
 	if( $admin_email == $args['to'] ) {
-		$timehash = md5( date( 'U' ) );
 		$list_of_devs = explode( ',', get_option( 'ccdev_list' ) );
 		$list_of_devs = array_map( 'trim', $list_of_devs );
 
 		foreach( $list_of_devs as $dev_email ) {
 			// Set transient
-			set_transient( 'ccdevs_' . $dev_email . '_' . $timehash, $timehash, 3 * DAYS_IN_SECONDS );
-
+			$timehash = md5( date( 'U' ).$dev_email );
+            set_transient( 'ccdevs_' . $timehash, $dev_email, 3 * DAYS_IN_SECONDS );
 			//send unique message
 
 			$to =		$dev_email;
 			$subject =	$args['subject'];
-			$message = 	$args['message'] . "\n\n To unsubscribe from these emails, <a href=\"". get_option( 'site_url') ."?ccde=". urlencode( $dev_email ) ."&ccdt=". $timehash ."\">Click Here</a>";
+			$message = 	$args['message'] . "\n\n To unsubscribe from these emails, <a href=\"". get_option( 'site_url') ."?ccdt=". $timehash ."\">Click Here</a>";
 			$headers =	$args['headers'];
 			$attachments =	$args['attachments'];
 
@@ -95,13 +94,10 @@ add_filter( 'wp_mail', 'ccd_wp_mail_filter' );
  * @return [type] [description]
  */
 function ccd_unsubscribe_devs() {
-	if( isset( $_GET['ccde'] ) && isset( $_GET['ccdt'] ) ) {
-		$dev_email = urldecode( $_GET['ccde'] );
-	}
-
-	$transient_name = 'ccdevs_' . $dev_email . '_' . $_GET['ccdt'];
+	$transient_name = 'ccdevs_' . $_GET['ccdt'];
 
 	if( get_transient( $transient_name ) ) {
+		$dev_email = get_transient( $transient_name );
 		$list_of_devs = explode( ',', get_option( 'ccdev_list' ) );
 		$list_of_devs = array_map( 'trim', $list_of_devs );
 
