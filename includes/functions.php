@@ -11,31 +11,32 @@
 
 add_action( 'admin_init', 'ccd_add_settings_section' );
 function ccd_add_settings_section() {
-    add_settings_section(  
-        'ccd_settings_section', // Section ID 
-        'CC Devs', // Section Title
-        'ccd_section_options_callback', // Callback
-        'general' // What Page?  This makes the section show up on the General Settings Page
-    );
+	add_settings_section(
+		'ccd_settings_section',
+		'CC Devs',
+		'ccd_section_options_callback',
+		'general'
+	);
 
-    add_settings_field( // Option 1
-        'ccdev_list', // Option ID
-        'Dev Emails', // Label
-        'ccdev_list_callback', // !important - This is where the args go!
-        'general', // Page it will be displayed (General Settings)
-        'ccd_settings_section', // Name of our section
-        array( // The $args
-            'ccdev_list' // Should match Option ID
-        )  
-    ); 
-  register_setting( 'general','ccdev_list', 'esc_attr' );
+	add_settings_field(
+		'ccdev_list',
+		'Dev Emails',
+		'ccdev_list_callback',
+		'general',
+		'ccd_settings_section',
+		array(
+			'ccdev_list'
+		)
+	);
+
+	register_setting( 'general','ccdev_list', 'esc_attr' );
 }
 
-function ccd_section_options_callback() { // Section Callback
-    echo '<p>'. __( 'Add a comma separated list of email addresses to receive copies of emails sent to the site admin.', 'ccdevs' ) .'</p>';  
+function ccd_section_options_callback() {
+	echo '<p>'. __( 'Add a comma separated list of email addresses to receive copies of emails sent to the site admin.', 'ccdevs' ) .'</p>';
 }
 
-function ccdev_list_callback($args) {  // Textbox Callback
-    $option = get_option($args[0]);
-    echo '<input type="text" id="'. $args[0] .'" name="'. $args[0] .'" value="' . $option . '" />';
+function ccdev_list_callback($args) {
+	$option = get_option($args[0]);
+	echo '<input type="text" id="'. $args[0] .'" name="'. $args[0] .'" value="' . $option . '" />';
 }
