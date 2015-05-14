@@ -66,31 +66,60 @@ function my_wp_mail_filter( $args ) {
 	if( $admin_email == $args['to'] ) {
 		$timehash = md5( date( 'U' ) );
 		$list_of_devs = explode( ',', get_option( 'ccdev_list' ) );
+		$list_of_devs = array_map( 'trim', $list_of_devs );
 
-		// 1. Set transient
-		set_transient( 'ccdevs_list', $list_of_devs, 3 * DAYS_IN_SECONDS );
+		foreach( $list_of_devs as $dev_email ) {
+			// Set transient
+			set_transient( 'ccdevs_' . $dev_email . '_' . $timehash, $timehash, 3 * DAYS_IN_SECONDS );
 
-		// 2. Add CC list
-		$do_cclist = true;
-
-		// 3. Filter Message with unsub link
-		$args['message'] .= "\n\n To unsubscribe from these emails, <a href=\"". get_option( 'site_url') ."?ccdevs=". $timehash ."\">Click Here</a>";
-
+			//send unique message
+			$new_wp_mail = array(
+			'to'          => $dev_email,
+			'subject'     => $args['subject'],
+			'message'     => $args['message'] . "\n\n To unsubscribe from these emails, <a href=\"". get_option( 'site_url') ."?ccde=". urlencode( $dev_email ) ."&ccdt=". $timehash ."\">Click Here</a>",
+			'headers'     => $args['headers'],
+			'attachments' => $args['attachments'],
+			);
+		}
 	}
 
-	$new_wp_mail = array(
-		'to'          => $args['to'],
-		'subject'     => $args['subject'],
-		'message'     => $args['message'],
-		'headers'     => $args['headers'],
-		'attachments' => $args['attachments'],
-	);
-
-	if( $do_cclist == true ) {
-		$new_wp_mail['cc'] = get_option( 'ccdev_list' );
-	}
-	
-	return $new_wp_mail;
+	return $args;
 }
 
 add_filter( 'wp_mail', 'my_wp_mail_filter' );
+
+/**
+ * ccd_unsubscribe_devs Unsubscribe devs from receiving admin emails
+ * @return [type] [description]
+ */
+function ccd_unsubscribe_devs() {
+	if( isset( $_GET['ccde'] ) && isset( $_GET['ccdt'] ) ) {
+		$dev_email = urldecode( $_GET['ccde'] );
+	}
+
+	$transient_name = 'ccdevs_' . $dev_email . '_' . $_GET['ccdt'];
+
+	if( get_transient( $transient_name ) ) {
+		$list_of_devs = explode( ',', get_option( 'ccdev_list' ) );
+		$list_of_devs = array_map( 'trim', $list_of_devs );
+
+		if ( is_int ( array_search( $dev_email, $list_of_devs ) ) ) {
+			$key = array_search( $dev_email, $list_of_devs );
+			unset( $list_of_devs[$key] );
+			update_option( 'ccdev_list', implode( ',', $list_of_devs ) );
+		}
+	}
+}
+add_action( 'init', 'ccd_unsubscribe_devs' );
+
+function jh_kick_email() {
+	if( isset( $_GET['kick'] ) ) {
+		$to = 'john@vegasgeek.com';
+		$subject = 'testing the kick';
+		$body = 'The email body content';
+
+		wp_mail( $to, $subject, $body );
+	}
+}
+
+add_action( 'init', 'jh_kick_email' );
