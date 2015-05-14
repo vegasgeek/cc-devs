@@ -55,14 +55,15 @@ function ccdev_list_callback($args) {
 }
 
 /**
- * my_wp_mail_filter Filters emails, if sending to admins, also CC's developers
+ * ccd_wp_mail_filter Filters emails, if sending to admins, also CC's developers
  * @param  [type] $args [description]
  * @return [type]       [description]
  */
-function my_wp_mail_filter( $args ) {
+function ccd_wp_mail_filter( $args ) {
 
 	// Get Admin email
 	$admin_email = get_site_option( 'admin_email' );
+
 	if( $admin_email == $args['to'] ) {
 		$timehash = md5( date( 'U' ) );
 		$list_of_devs = explode( ',', get_option( 'ccdev_list' ) );
@@ -73,20 +74,21 @@ function my_wp_mail_filter( $args ) {
 			set_transient( 'ccdevs_' . $dev_email . '_' . $timehash, $timehash, 3 * DAYS_IN_SECONDS );
 
 			//send unique message
-			$new_wp_mail = array(
-			'to'          => $dev_email,
-			'subject'     => $args['subject'],
-			'message'     => $args['message'] . "\n\n To unsubscribe from these emails, <a href=\"". get_option( 'site_url') ."?ccde=". urlencode( $dev_email ) ."&ccdt=". $timehash ."\">Click Here</a>",
-			'headers'     => $args['headers'],
-			'attachments' => $args['attachments'],
-			);
+
+			$to =		$dev_email;
+			$subject =	$args['subject'];
+			$message = 	$args['message'] . "\n\n To unsubscribe from these emails, <a href=\"". get_option( 'site_url') ."?ccde=". urlencode( $dev_email ) ."&ccdt=". $timehash ."\">Click Here</a>";
+			$headers =	$args['headers'];
+			$attachments =	$args['attachments'];
+
+			wp_mail( $to, $subject, $message, $headers, $attachments );
 		}
 	}
 
 	return $args;
 }
 
-add_filter( 'wp_mail', 'my_wp_mail_filter' );
+add_filter( 'wp_mail', 'ccd_wp_mail_filter' );
 
 /**
  * ccd_unsubscribe_devs Unsubscribe devs from receiving admin emails
