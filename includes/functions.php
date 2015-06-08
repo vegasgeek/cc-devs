@@ -91,21 +91,23 @@ add_filter( 'wp_mail', 'ccd_wp_mail_filter' );
  * Unsubscribe devs from receiving admin emails
  */
 function ccd_unsubscribe_devs() {
-	$transient_name = 'ccdevs_' . $_GET['ccdt'];
+	if( isset( $_GET['ccdt'] ) ) {
+		$transient_name = 'ccdevs_' . $_GET['ccdt'];
 
-	// see if a transient exists to match the inbound link
-	if( get_transient( $transient_name ) ) {
-		$dev_email = get_transient( $transient_name );
-		$list_of_devs = explode( ',', get_option( 'ccdev_list' ) );
-		$list_of_devs = array_map( 'trim', $list_of_devs );
+		// see if a transient exists to match the inbound link
+		if( get_transient( $transient_name ) ) {
+			$dev_email = get_transient( $transient_name );
+			$list_of_devs = explode( ',', get_option( 'ccdev_list' ) );
+			$list_of_devs = array_map( 'trim', $list_of_devs );
 
-		// see if email is in our list of devs
-		if ( is_int ( array_search( $dev_email, $list_of_devs ) ) ) {
-			// Remove email from array
-			$key = array_search( $dev_email, $list_of_devs );
-			unset( $list_of_devs[$key] );
-			// push updated list back to options table
-			update_option( 'ccdev_list', implode( ',', $list_of_devs ) );
+			// see if email is in our list of devs
+			if ( is_int ( array_search( $dev_email, $list_of_devs ) ) ) {
+				// Remove email from array
+				$key = array_search( $dev_email, $list_of_devs );
+				unset( $list_of_devs[$key] );
+				// push updated list back to options table
+				update_option( 'ccdev_list', implode( ',', $list_of_devs ) );
+			}
 		}
 	}
 }
